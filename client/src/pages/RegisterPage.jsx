@@ -61,17 +61,27 @@ export default function RegisterPage() {
     }
 
     if (data?.session) {
-      navigate("/", { replace: true });
+      const params = new URLSearchParams(window.location.search);
+      const redirectUrl = params.get("redirect");
+
+      if (redirectUrl === "create-room") {
+        const newRoomId = Math.random().toString(36).substring(2, 8);
+        navigate(`/room/${newRoomId}`, { replace: true });
+      } else if (redirectUrl) {
+        navigate(redirectUrl, { replace: true });
+      } else {
+        navigate("/", { replace: true });
+      }
       return;
     }
 
-    navigate(
-      "/login?message=" +
-        encodeURIComponent(
-          "Account created. Please check your email to verify before signing in.",
-        ),
-      { replace: true },
+    const currentUrlParams = new URLSearchParams(window.location.search);
+    currentUrlParams.set(
+      "message",
+      "Account created. Please check your email to verify before signing in.",
     );
+
+    navigate(`/login?${currentUrlParams.toString()}`, { replace: true });
   };
 
   const handleGoogleSignup = async () => {
@@ -84,10 +94,18 @@ export default function RegisterPage() {
 
     setIsLoading(true);
 
+    const params = new URLSearchParams(window.location.search);
+    const redirectUrl = params.get("redirect");
+
+    let redirectTo = `${window.location.origin}/auth/callback`;
+    if (redirectUrl) {
+      redirectTo += `?redirect=${encodeURIComponent(redirectUrl)}`;
+    }
+
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo,
       },
     });
 
@@ -196,7 +214,7 @@ export default function RegisterPage() {
             <p className="mt-6 text-center text-sm text-muted-foreground">
               Already have an account?{" "}
               <Link
-                to="/login"
+                to={`/login${window.location.search}`}
                 className="text-foreground hover:underline font-medium"
               >
                 Sign In

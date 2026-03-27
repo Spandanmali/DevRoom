@@ -9,7 +9,7 @@ import { Footer } from "@/components/shared/footer";
 import { PageBackground } from "@/components/shared/page-background";
 import {
   isSupabaseConfigured,
-  supabase, 
+  supabase,
   supabaseConfigError,
 } from "@/lib/supabase";
 
@@ -62,7 +62,17 @@ export default function LoginPage() {
       return;
     }
 
-    navigate("/", { replace: true });
+    const params = new URLSearchParams(window.location.search);
+    const redirectUrl = params.get("redirect");
+
+    if (redirectUrl === "create-room") {
+      const newRoomId = Math.random().toString(36).substring(2, 8);
+      navigate(`/room/${newRoomId}`, { replace: true });
+    } else if (redirectUrl) {
+      navigate(redirectUrl, { replace: true });
+    } else {
+      navigate("/", { replace: true });
+    }
   };
 
   const handleGoogleLogin = async () => {
@@ -75,10 +85,18 @@ export default function LoginPage() {
 
     setIsLoading(true);
 
+    const params = new URLSearchParams(window.location.search);
+    const redirectUrl = params.get("redirect");
+
+    let redirectTo = `${window.location.origin}/auth/callback`;
+    if (redirectUrl) {
+      redirectTo += `?redirect=${encodeURIComponent(redirectUrl)}`;
+    }
+
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo,
       },
     });
 
@@ -193,7 +211,7 @@ export default function LoginPage() {
             <p className="mt-6 text-center text-sm text-muted-foreground">
               {"Don't have an account? "}
               <Link
-                to="/register"
+                to={`/register${window.location.search}`}
                 className="text-foreground hover:underline font-medium"
               >
                 Sign Up
