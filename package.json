@@ -1,0 +1,31 @@
+{
+  "name": "devroom",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "client": "npm --prefix client run dev",
+    "server": "npm --prefix server run dev",
+    "dev": "echo Run npm run dev inside client and server folders separately",
+    "test": "echo \"No root tests configured\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Spandanmali/DevRoom.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Spandanmali/DevRoom/issues"
+  },
+  "homepage": "https://github.com/Spandanmali/DevRoom#readme",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.100.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "socket.io": "^4.8.3"
+  }
+}
