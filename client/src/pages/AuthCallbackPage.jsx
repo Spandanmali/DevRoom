@@ -27,7 +27,15 @@ export default function AuthCallbackPage() {
           }
 
           if (isActive) {
-            navigate("/", { replace: true });
+            const redirectUrl = url.searchParams.get("redirect");
+            if (redirectUrl === "create-room") {
+              const newRoomId = Math.random().toString(36).substring(2, 8);
+              navigate(`/room/${newRoomId}`, { replace: true });
+            } else if (redirectUrl) {
+              navigate(redirectUrl, { replace: true });
+            } else {
+              navigate("/", { replace: true });
+            }
           }
           return;
         }
@@ -51,7 +59,15 @@ export default function AuthCallbackPage() {
           }
 
           if (session && isActive) {
-            navigate("/", { replace: true });
+            const redirectUrl = url.searchParams.get("redirect");
+            if (redirectUrl === "create-room") {
+              const newRoomId = Math.random().toString(36).substring(2, 8);
+              navigate(`/room/${newRoomId}`, { replace: true });
+            } else if (redirectUrl) {
+              navigate(redirectUrl, { replace: true });
+            } else {
+              navigate("/", { replace: true });
+            }
             return;
           }
 

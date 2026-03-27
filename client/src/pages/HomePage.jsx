@@ -12,17 +12,25 @@ export default function HomePage() {
   const [roomId, setRoomId] = useState("");
 
   const handleCreateRoom = async () => {
-    if (supabase) {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (!session) {
-        navigate(
-          "/login?message=" +
-            encodeURIComponent("Please sign in to create a room."),
-        );
-        return;
-      }
+    if (!supabase) {
+      navigate(
+        `/login?redirect=create-room&message=${encodeURIComponent(
+          "Please sign in to create a room.",
+        )}`,
+      );
+      return;
+    }
+
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    if (!session) {
+      navigate(
+        `/login?redirect=create-room&message=${encodeURIComponent(
+          "Please sign in to create a room.",
+        )}`,
+      );
+      return;
     }
     const newRoomId = Math.random().toString(36).substring(2, 8);
     navigate(`/room/${newRoomId}`);
@@ -31,17 +39,25 @@ export default function HomePage() {
   const handleJoinRoom = async () => {
     if (!roomId.trim()) return;
 
-    if (supabase) {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (!session) {
-        navigate(
-          "/login?message=" +
-            encodeURIComponent("Please sign in to join a room."),
-        );
-        return;
-      }
+    if (!supabase) {
+      navigate(
+        `/login?redirect=/room/${encodeURIComponent(
+          roomId.trim(),
+        )}&message=${encodeURIComponent("Please sign in to join a room.")}`,
+      );
+      return;
+    }
+
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    if (!session) {
+      navigate(
+        `/login?redirect=/room/${encodeURIComponent(
+          roomId.trim(),
+        )}&message=${encodeURIComponent("Please sign in to join a room.")}`,
+      );
+      return;
     }
     navigate(`/room/${roomId.trim()}`);
   };
