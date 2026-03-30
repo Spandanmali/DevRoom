@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase, supabaseConfigError } from "@/lib/supabase";
+import { api } from "@/lib/api";
 
 export default function AuthCallbackPage() {
   const navigate = useNavigate();
@@ -29,8 +30,7 @@ export default function AuthCallbackPage() {
           if (isActive) {
             const redirectUrl = url.searchParams.get("redirect");
             if (redirectUrl === "create-room") {
-              const newRoomId = Math.random().toString(36).substring(2, 8);
-              navigate(`/room/${newRoomId}`, { replace: true });
+              navigate("/?action=create-room", { replace: true });
             } else if (redirectUrl) {
               navigate(redirectUrl, { replace: true });
             } else {
@@ -61,8 +61,7 @@ export default function AuthCallbackPage() {
           if (session && isActive) {
             const redirectUrl = url.searchParams.get("redirect");
             if (redirectUrl === "create-room") {
-              const newRoomId = Math.random().toString(36).substring(2, 8);
-              navigate(`/room/${newRoomId}`, { replace: true });
+              navigate("/?action=create-room", { replace: true });
             } else if (redirectUrl) {
               navigate(redirectUrl, { replace: true });
             } else {

@@ -12,6 +12,7 @@ import {
   supabase,
   supabaseConfigError,
 } from "@/lib/supabase";
+import { api } from "@/lib/api";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -66,8 +67,7 @@ export default function LoginPage() {
     const redirectUrl = params.get("redirect");
 
     if (redirectUrl === "create-room") {
-      const newRoomId = Math.random().toString(36).substring(2, 8);
-      navigate(`/room/${newRoomId}`, { replace: true });
+      navigate("/?action=create-room", { replace: true });
     } else if (redirectUrl) {
       navigate(redirectUrl, { replace: true });
     } else {
