@@ -18,7 +18,7 @@ export default function RoomPage() {
   const navigate = useNavigate();
   const [currentUser, setCurrentUser] = useState(null);
   const [roomName, setRoomName] = useState("Loading...");
-  const [language, setLanguage] = useState("javascript");
+  const [language, setLanguage] = useState("javascript-node");
   const [code, setCode] = useState(SAMPLE_CODE);
   const [rightPanelView, setRightPanelView] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -62,7 +62,7 @@ export default function RoomPage() {
 
         if (isMounted) {
           setRoomName(roomData.name);
-          setLanguage(roomData.language || "javascript");
+          setLanguage(roomData.language || "javascript-node");
 
           // Eventually this will be powered by sockets, but for now we load participants from db
           if (roomData.participants && session) {
