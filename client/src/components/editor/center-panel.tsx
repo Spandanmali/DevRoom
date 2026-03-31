@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import Editor from "../Editor"
 
 interface User {
   id: string
@@ -44,14 +45,20 @@ export function CenterPanel({ code, onChange, language, users }: CenterPanelProp
 
   const getFileExtension = (lang: string) => {
     const extensions: Record<string, string> = {
+      "javascript-node": "js",
+      "javascript-browser": "js",
       javascript: "js",
       python: "py",
       cpp: "cpp",
       java: "java",
-      go: "go",
+      html: "html",
+      css: "css",
     }
     return extensions[lang] || "txt"
   }
+
+  // Monaco editor expects 'javascript', not 'javascript-node'
+  const monacoLanguage = language.startsWith("javascript") ? "javascript" : language
 
   return (
     <div className="flex-1 flex flex-col min-w-0 bg-background">
@@ -59,74 +66,23 @@ export function CenterPanel({ code, onChange, language, users }: CenterPanelProp
       <div className="h-8 border-b border-border bg-card flex items-center justify-between px-3">
         <div className="flex items-center gap-2">
           <span className="text-xs text-foreground font-mono">
-            main.{getFileExtension(language)}
+            {language === 'html' ? 'index' : language === 'css' ? 'style' : 'main'}.{getFileExtension(language)}
           </span>
         </div>
         <span className="text-xs text-muted-foreground">
-          Ln {cursorPosition.line}, Col {cursorPosition.column}
+          Code Editor
         </span>
       </div>
 
       {/* Editor Area */}
       <div className="flex-1 flex overflow-hidden relative">
-        {/* Line Numbers */}
-        <div className="w-12 bg-card border-r border-border py-3 overflow-hidden">
-          <div className="font-mono text-xs text-muted-foreground text-right pr-3 leading-6">
-            {Array.from({ length: lineCount }, (_, i) => (
-              <div key={i + 1}>{i + 1}</div>
-            ))}
-          </div>
-        </div>
-
-        {/* Code Area */}
-        <div className="flex-1 relative">
-          <textarea
-            value={code}
-            onChange={handleTextChange}
-            onSelect={handleCursorChange}
-            onClick={handleCursorChange}
-            onKeyUp={handleCursorChange}
-            className="absolute inset-0 w-full h-full bg-background text-foreground font-mono text-sm leading-6 p-3 resize-none outline-none"
-            spellCheck={false}
-            style={{
-              tabSize: 2,
-            }}
-          />
-
-          {/* Simulated Other User Cursors */}
-          {MOCK_CURSORS.map((cursor) => {
-            const user = users.find((u) => u.id === cursor.userId)
-            if (!user) return null
-            
-            // Calculate approximate position
-            const top = (cursor.line - 1) * 24 + 12 // 24px line height + 12px padding
-            const left = cursor.column * 8.4 + 12 // approximate character width + padding
-
-            return (
-              <div
-                key={cursor.userId}
-                className="absolute pointer-events-none"
-                style={{
-                  top: `${top}px`,
-                  left: `${left}px`,
-                }}
-              >
-                {/* Cursor Line */}
-                <div
-                  className="w-0.5 h-5 animate-pulse"
-                  style={{ backgroundColor: user.color }}
-                />
-                {/* User Label */}
-                <div
-                  className="absolute -top-5 left-0 px-1.5 py-0.5 text-[10px] text-white whitespace-nowrap rounded-sm"
-                  style={{ backgroundColor: user.color }}
-                >
-                  {user.name}
-                </div>
-              </div>
-            )
-          })}
-        </div>
+        <Editor 
+          value={code}
+          onChange={onChange}
+          language={monacoLanguage}
+          envLanguage={language}
+          theme="vs-dark"
+        />
       </div>
     </div>
   )

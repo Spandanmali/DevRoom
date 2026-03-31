@@ -38,11 +38,13 @@ interface EditorNavbarProps {
 }
 
 const LANGUAGES = [
-  { value: "javascript", label: "JavaScript" },
+  { value: "javascript-node", label: "JavaScript (Node)" },
+  { value: "javascript-browser", label: "JavaScript (Browser)" },
   { value: "python", label: "Python" },
   { value: "cpp", label: "C++" },
   { value: "java", label: "Java" },
-  { value: "go", label: "Go" },
+  { value: "html", label: "HTML" },
+  { value: "css", label: "CSS" },
 ]
 
 export function EditorNavbar({
