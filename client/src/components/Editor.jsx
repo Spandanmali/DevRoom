@@ -1,13 +1,29 @@
-import React from "react";
+import React, { useRef, useEffect } from "react";
 import MonacoEditor from "@monaco-editor/react";
+import * as Y from "yjs";
+import { WebsocketProvider } from "y-websocket";
+import { MonacoBinding } from "y-monaco";
 
 const Editor = ({
+  roomId,
   value,
   onChange,
   language = "javascript",
   envLanguage = "javascript-node",
   theme = "vs-dark",
 }) => {
+  const ydocRef = useRef(null);
+  const providerRef = useRef(null);
+  const bindingRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (bindingRef.current) bindingRef.current.destroy();
+      if (providerRef.current) providerRef.current.destroy();
+      if (ydocRef.current) ydocRef.current.destroy();
+    };
+  }, []);
+
   const handleEditorChange = (value, event) => {
     if (onChange) {
       onChange(value);
@@ -15,6 +31,32 @@ const Editor = ({
   };
 
   const handleEditorDidMount = (editor, monaco) => {
+    // Setup YJS
+    if (roomId) {
+      ydocRef.current = new Y.Doc();
+      const wsUrl = (
+        import.meta.env.VITE_SOCKET_URL || "http://localhost:5000"
+      ).replace(/^http/, "ws");
+      providerRef.current = new WebsocketProvider(
+        `${wsUrl}/yjs`,
+        roomId,
+        ydocRef.current,
+      );
+
+      const type = ydocRef.current.getText("monaco");
+
+      if (type.length === 0 && value) {
+        type.insert(0, value);
+      }
+
+      bindingRef.current = new MonacoBinding(
+        type,
+        editor.getModel(),
+        new Set([editor]),
+        providerRef.current.awareness,
+      );
+    }
+
     // Determine whether we are in node or browser context
     const isNode = envLanguage === "javascript-node";
 
@@ -335,7 +377,7 @@ const Editor = ({
         width="100%"
         language={language}
         theme={theme}
-        value={value}
+        defaultValue={value}
         onChange={handleEditorChange}
         onMount={handleEditorDidMount}
         options={{

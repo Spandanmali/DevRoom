@@ -8,10 +8,12 @@ import {
   AuthMiddleware,
   GuestOnlyMiddleware,
 } from "@/middleware/AuthMiddleware";
+import { Toaster } from "sonner";
 
 function App() {
   return (
     <BrowserRouter>
+      <Toaster position="bottom-right" richColors />
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route
