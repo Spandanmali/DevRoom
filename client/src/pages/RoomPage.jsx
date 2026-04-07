@@ -26,7 +26,6 @@ export default function RoomPage() {
   const [code, setCode] = useState(SAMPLE_CODE);
   const [saveStatus, setSaveStatus] = useState("Saved ☁️");
   const [rightPanelView, setRightPanelView] = useState(null);
-  const [messages, setMessages] = useState([]);
   const [activeUsers, setActiveUsers] = useState([]);
 
   const [isRunning, setIsRunning] = useState(false);
@@ -289,23 +288,6 @@ export default function RoomPage() {
     }, 1000);
   };
 
-  const handleSendMessage = (message) => {
-    if (!currentUser) return;
-
-    const newMessage = {
-      id: Date.now().toString(),
-      userId: currentUser.id,
-      username: currentUser.name,
-      color: currentUser.color,
-      message,
-      time: new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-    };
-    setMessages([...messages, newMessage]);
-  };
-
   const handleAIReview = () => {
     setRightPanelView("ai-review");
   };
@@ -351,8 +333,8 @@ export default function RoomPage() {
       <div className="flex-1 flex overflow-hidden">
         <LeftPanel
           users={activeUsers}
-          messages={messages}
-          onSendMessage={handleSendMessage}
+          socket={socket}
+          roomId={roomId}
           onAIReview={handleAIReview}
           onAIFix={handleAIFix}
         />
@@ -363,6 +345,7 @@ export default function RoomPage() {
           onChange={handleCodeChange}
           language={language}
           users={activeUsers.filter((u) => !u.isCurrentUser)}
+          currentUser={currentUser}
           saveStatus={saveStatus}
         />
 

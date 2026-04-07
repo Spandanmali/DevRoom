@@ -1,8 +1,9 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import MonacoEditor from "@monaco-editor/react";
 import * as Y from "yjs";
 import { WebsocketProvider } from "y-websocket";
 import { MonacoBinding } from "y-monaco";
+import LiveCursors from "./LiveCursors";
 
 const Editor = ({
   roomId,
@@ -11,10 +12,12 @@ const Editor = ({
   language = "javascript",
   envLanguage = "javascript-node",
   theme = "vs-dark",
+  currentUser,
 }) => {
   const ydocRef = useRef(null);
   const providerRef = useRef(null);
   const bindingRef = useRef(null);
+  const [editorInstance, setEditorInstance] = useState(null);
 
   useEffect(() => {
     return () => {
@@ -55,7 +58,19 @@ const Editor = ({
         new Set([editor]),
         providerRef.current.awareness,
       );
+
+      // Share cursor position on Monaco cursor move
+      editor.onDidChangeCursorPosition((e) => {
+        if (currentUser) {
+          providerRef.current.awareness.setLocalStateField("customCursor", {
+            position: e.position,
+            user: currentUser,
+          });
+        }
+      });
     }
+
+    setEditorInstance(editor);
 
     // Determine whether we are in node or browser context
     const isNode = envLanguage === "javascript-node";
@@ -371,7 +386,10 @@ const Editor = ({
   };
 
   return (
-    <div className="w-full h-full min-h-[500px]">
+    <div
+      className="w-full h-full min-h-[500px]"
+      style={{ position: "relative" }}
+    >
       <MonacoEditor
         height="100%"
         width="100%"
@@ -425,6 +443,12 @@ const Editor = ({
           autoIndent: "full",
         }}
       />
+      {providerRef.current && editorInstance && (
+        <LiveCursors
+          awareness={providerRef.current.awareness}
+          editor={editorInstance}
+        />
+      )}
     </div>
   );
 };

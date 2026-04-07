@@ -17,6 +17,7 @@ interface CenterPanelProps {
   language: string
   users: User[]
   saveStatus?: string
+  currentUser?: User
 }
 
 // Simulated cursor positions for other users
@@ -25,7 +26,7 @@ const MOCK_CURSORS = [
   { userId: "2", line: 12, column: 15 },
 ]
 
-export function CenterPanel({ roomId, code, onChange, language, users, saveStatus = "Saved" }: CenterPanelProps) {
+export function CenterPanel({ roomId, code, onChange, language, users, saveStatus = "Saved", currentUser }: CenterPanelProps) {
   const [lineCount, setLineCount] = useState(1)
   const [cursorPosition, setCursorPosition] = useState({ line: 1, column: 1 })
   const { resolvedTheme } = useTheme()
@@ -87,6 +88,7 @@ export function CenterPanel({ roomId, code, onChange, language, users, saveStatu
           language={monacoLanguage}
           envLanguage={language}
           theme={resolvedTheme === 'light' ? 'vs' : 'vs-dark'}
+          currentUser={currentUser}
         />
       </div>
     </div>
