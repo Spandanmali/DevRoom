@@ -1,10 +1,12 @@
+import supabase from '../lib/supabase.js';
+
 const userSocketMap = new Map();
 
 function setupSocketHandlers(io) {
     io.on('connection', (socket) => {
         console.log('Socket connected:', socket.id);
 
-        socket.on('join-room', ({ roomId, user }) => {
+        socket.on('join-room', async ({ roomId, user }) => {
             console.log(`[SERVER] Received join-room event from socket ID: ${socket.id} for roomId: ${roomId}, user: ${user?.name || user?.email || user?.id}`);
 
             userSocketMap.set(socket.id, { roomId, user });
@@ -20,6 +22,57 @@ function setupSocketHandlers(io) {
             // Notify everyone in the room (including the sender) about the updated user list
             console.log(`[SERVER] Broadcasting user-connected to roomId: ${roomId} - currently has ${clients.length} clients`);
             io.to(roomId).emit('user-connected', { user, socketId: socket.id, clients });
+
+            // Load last 50 messages on room join
+            try {
+                const { data: messages, error } = await supabase
+                    .from('messages')
+                    .select('*')
+                    .eq('room_id', roomId)
+                    .order('created_at', { ascending: false })
+                    .limit(50);
+
+                if (error) {
+                    console.error('[SERVER] Error fetching messages:', error);
+                } else {
+                    // Send to the joined user (reverse to get chronological order: oldest to newest)
+                    const chronologicalMessages = messages ? messages.reverse() : [];
+                    socket.emit('load-messages', chronologicalMessages);
+                }
+            } catch (err) {
+                console.error('[SERVER] Exception fetching messages:', err);
+            }
+        });
+
+        socket.on('send-message', async ({ roomId, message }) => {
+            console.log(`[SERVER] Received message from ${socket.id} for room ${roomId}: ${message}`);
+            const userData = userSocketMap.get(socket.id);
+            if (!userData) return;
+            const { user } = userData;
+
+            const newMessage = {
+                room_id: roomId,
+                user_id: user?.id || socket.id,
+                username: user?.name || user?.email || 'Anonymous',
+                content: message,
+                created_at: new Date().toISOString()
+            };
+
+            // Broadcast to room
+            io.to(roomId).emit('receive-message', newMessage);
+
+            // Save to messages table
+            try {
+                const { error } = await supabase
+                    .from('messages')
+                    .insert([newMessage]);
+
+                if (error) {
+                    console.error('[SERVER] Error saving message:', error);
+                }
+            } catch (err) {
+                console.error('[SERVER] Exception saving message:', err);
+            }
         });
 
         socket.on('leave-room', ({ roomId }) => {
