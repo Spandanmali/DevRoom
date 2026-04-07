@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useTheme } from "next-themes"
 import Editor from "../Editor"
 
 interface User {
@@ -10,10 +11,12 @@ interface User {
 }
 
 interface CenterPanelProps {
+  roomId?: string
   code: string
   onChange: (code: string) => void
   language: string
   users: User[]
+  saveStatus?: string
 }
 
 // Simulated cursor positions for other users
@@ -22,12 +25,13 @@ const MOCK_CURSORS = [
   { userId: "2", line: 12, column: 15 },
 ]
 
-export function CenterPanel({ code, onChange, language, users }: CenterPanelProps) {
+export function CenterPanel({ roomId, code, onChange, language, users, saveStatus = "Saved" }: CenterPanelProps) {
   const [lineCount, setLineCount] = useState(1)
   const [cursorPosition, setCursorPosition] = useState({ line: 1, column: 1 })
+  const { resolvedTheme } = useTheme()
 
   useEffect(() => {
-    setLineCount(code.split("\n").length)
+    setLineCount((code || "").split("\n").length)
   }, [code])
 
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -70,18 +74,19 @@ export function CenterPanel({ code, onChange, language, users }: CenterPanelProp
           </span>
         </div>
         <span className="text-xs text-muted-foreground">
-          Code Editor
+          {saveStatus}
         </span>
       </div>
 
       {/* Editor Area */}
       <div className="flex-1 flex overflow-hidden relative">
-        <Editor 
+        <Editor
+          roomId={roomId}
           value={code}
           onChange={onChange}
           language={monacoLanguage}
           envLanguage={language}
-          theme="vs-dark"
+          theme={resolvedTheme === 'light' ? 'vs' : 'vs-dark'}
         />
       </div>
     </div>

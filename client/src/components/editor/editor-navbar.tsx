@@ -2,8 +2,9 @@
 
 import { useState } from "react"
 import { Link } from "react-router-dom"
-import { Play, Share2, Check, ChevronDown, LogOut, User } from "lucide-react"
+import { Play, Share2, Check, ChevronDown, LogOut, User, Moon, Sun } from "lucide-react"   
 import { Button } from "@/components/ui/button"
+import { useTheme } from "next-themes"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -59,6 +60,7 @@ export function EditorNavbar({
 }: EditorNavbarProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [copied, setCopied] = useState(false)
+  const { theme, setTheme } = useTheme()
 
   const handleShare = async () => {
     const url = `${window.location.origin}/room/${roomId}`
@@ -180,6 +182,16 @@ export function EditorNavbar({
             </div>
           )}
         </div>
+
+        {/* Theme Toggle */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="rounded-full shrink-0 h-8 w-8"
+          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+        >
+          {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4 text-slate-800" />}
+        </Button>
 
         {/* User Dropdown */}
         <DropdownMenu>

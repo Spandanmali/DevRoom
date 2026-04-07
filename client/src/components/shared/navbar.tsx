@@ -74,10 +74,19 @@ export function Navbar({ showAuthButtons = true }: NavbarProps) {
           DevRoom
         </span>
       </Link>
-      {showAuthButtons && isAuthenticated !== null && (
-        <div className="flex items-center gap-3">
-          {!isAuthenticated ? (
-            <>
+      <div className="flex items-center gap-3">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="rounded-full shrink-0"
+          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+        >
+          {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5 text-slate-800" />}
+        </Button>
+        {showAuthButtons && isAuthenticated !== null && (
+          <div className="flex items-center gap-3">
+            {!isAuthenticated ? (
+              <>
               <Button
                 variant="ghost"
                 className="text-muted-foreground hover:text-foreground"
@@ -111,22 +120,7 @@ export function Navbar({ showAuthButtons = true }: NavbarProps) {
                   <Settings className="mr-2 h-4 w-4" />
                   <span>Settings</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem 
-                  className="cursor-pointer" 
-                  onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                >
-                  {theme === "dark" ? (
-                    <>
-                      <Sun className="mr-2 h-4 w-4" />
-                      <span>Light Mode</span>
-                    </>
-                  ) : (
-                    <>
-                      <Moon className="mr-2 h-4 w-4" />
-                      <span>Dark Mode</span>
-                    </>
-                  )}
-                </DropdownMenuItem>
+
                 <DropdownMenuSeparator />
                 <DropdownMenuItem className="cursor-pointer text-red-600 focus:bg-red-100 focus:text-red-600 dark:focus:bg-red-900 dark:focus:text-red-100" onClick={handleSignOut}>
                   <LogOut className="mr-2 h-4 w-4" />
@@ -137,6 +131,7 @@ export function Navbar({ showAuthButtons = true }: NavbarProps) {
           )}
         </div>
       )}
+      </div>
     </header>
   )
 }
