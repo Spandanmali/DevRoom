@@ -66,7 +66,7 @@ export function CenterPanel({ roomId, code, onChange, language, users, saveStatu
   const monacoLanguage = language.startsWith("javascript") ? "javascript" : language
 
   return (
-    <div className="flex-1 flex flex-col min-w-0 bg-background">
+    <div className="flex-1 w-full h-full flex flex-col min-w-0 bg-background">
       {/* File Tab Bar */}
       <div className="h-8 border-b border-border bg-card flex items-center justify-between px-3">
         <div className="flex items-center gap-2">

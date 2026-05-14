@@ -4,7 +4,7 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 
 const fetchWithAuth = async (endpoint, options = {}) => {
   const { data: { session } } = await supabase.auth.getSession();
-  
+
   const headers = {
     'Content-Type': 'application/json',
     ...(options.headers || {})
@@ -33,17 +33,23 @@ const fetchWithAuth = async (endpoint, options = {}) => {
 };
 
 export const api = {
-  createRoom: (name, language = 'javascript') => 
+  createRoom: (name, language = 'javascript') =>
     fetchWithAuth('/rooms', {
       method: 'POST',
       body: JSON.stringify({ name, language })
     }),
-    
-  getRoom: (id) => 
+
+  getRoom: (id) =>
     fetchWithAuth(`/rooms/${id}`),
 
-  joinRoom: (id) => 
+  joinRoom: (id) =>
     fetchWithAuth(`/rooms/${id}/join`, {
       method: 'POST'
+    }),
+
+  reviewCode: (code, language = 'javascript') =>
+    fetchWithAuth('/ai/review', {
+      method: 'POST',
+      body: JSON.stringify({ code, language })
     })
 };

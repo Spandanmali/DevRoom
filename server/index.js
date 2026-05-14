@@ -1,11 +1,11 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import http from 'http';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import dotenv from 'dotenv';
 import { Server } from 'socket.io';
-
-dotenv.config();
 
 import authRoutes from './routes/auth.js';
 import roomRoutes from './routes/rooms.js';
@@ -17,8 +17,9 @@ import setupSocketHandlers from './socket/socketHandler.js';
 
 import { WebSocketServer } from 'ws';
 import yUtils from 'y-websocket/bin/utils';
-const { setupWSConnection, docs, setPersistence } = yUtils;
 import supabase from './lib/supabase.js';
+
+const { setupWSConnection, docs, setPersistence } = yUtils;
 
 const app = express();
 const server = http.createServer(app);
@@ -126,3 +127,6 @@ server.on('upgrade', (request, socket, head) => {
 server.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });
+
+
+

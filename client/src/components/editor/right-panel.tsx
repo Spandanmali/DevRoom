@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
-import { Skeleton } from "@/components/ui/skeleton"
+import AIReview from "@/components/AIReview"
 
 type RightPanelView = "output" | "ai-review" | "whiteboard" | "interview"
 
@@ -18,23 +18,8 @@ interface RightPanelProps {
   input: string
   onInputChange: (input: string) => void
   isRunning: boolean
-}
-
-// Mock AI review data
-const MOCK_AI_REVIEW = {
-  bugs: [
-    "Recursive fibonacci implementation has exponential time complexity O(2^n)",
-    "No input validation for negative numbers in fibonacci function",
-  ],
-  performance: [
-    "Consider using memoization or dynamic programming for fibonacci",
-    "Array.map creates a new array - consider using for loop for large datasets",
-  ],
-  suggestions: [
-    "Add JSDoc comments for better documentation",
-    "Consider adding TypeScript types for better type safety",
-    "Extract the API URL to a constant or environment variable",
-  ],
+  code: string
+  language: string
 }
 
 export function RightPanel({
@@ -44,23 +29,16 @@ export function RightPanel({
   input,
   onInputChange,
   isRunning,
+  code,
+  language,
 }: RightPanelProps) {
   const [interviewMode, setInterviewMode] = useState(false)
   const [timerDuration, setTimerDuration] = useState(45)
   const [timerRunning, setTimerRunning] = useState(false)
   const [timeRemaining, setTimeRemaining] = useState("00:45:00")
-  const [isAILoading, setIsAILoading] = useState(false)
-
-  // Simulate AI loading when opening AI review
-  useState(() => {
-    if (view === "ai-review") {
-      setIsAILoading(true)
-      setTimeout(() => setIsAILoading(false), 1500)
-    }
-  })
 
   return (
-    <div className="w-[300px] border-l border-border bg-card flex flex-col">
+    <div className="w-full h-full border-l border-border bg-card flex flex-col">
       {/* Output View */}
       {view === "output" && (
         <div className="flex-1 flex flex-col p-3 gap-3">
@@ -117,63 +95,7 @@ export function RightPanel({
             AI Code Review
           </h3>
 
-          {isAILoading ? (
-            <div className="space-y-4">
-              <Skeleton className="h-4 w-24 bg-muted" />
-              <Skeleton className="h-16 w-full bg-muted" />
-              <Skeleton className="h-4 w-32 bg-muted" />
-              <Skeleton className="h-16 w-full bg-muted" />
-            </div>
-          ) : (
-            <ScrollArea className="flex-1">
-              <div className="space-y-4">
-                {/* Bugs */}
-                <div>
-                  <h4 className="text-xs font-medium text-foreground mb-2 flex items-center gap-2">
-                    <span className="h-2 w-2 rounded-full bg-destructive" />
-                    Bugs Found
-                  </h4>
-                  <ul className="space-y-2">
-                    {MOCK_AI_REVIEW.bugs.map((bug, i) => (
-                      <li key={i} className="text-xs text-muted-foreground pl-4">
-                        {bug}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                {/* Performance */}
-                <div>
-                  <h4 className="text-xs font-medium text-foreground mb-2 flex items-center gap-2">
-                    <span className="h-2 w-2 rounded-full bg-[#f59e0b]" />
-                    Performance Issues
-                  </h4>
-                  <ul className="space-y-2">
-                    {MOCK_AI_REVIEW.performance.map((issue, i) => (
-                      <li key={i} className="text-xs text-muted-foreground pl-4">
-                        {issue}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                {/* Suggestions */}
-                <div>
-                  <h4 className="text-xs font-medium text-foreground mb-2 flex items-center gap-2">
-                    <span className="h-2 w-2 rounded-full bg-[#3b82f6]" />
-                    Suggestions
-                  </h4>
-                  <ul className="space-y-2">
-                    {MOCK_AI_REVIEW.suggestions.map((suggestion, i) => (
-                      <li key={i} className="text-xs text-muted-foreground pl-4">
-                        {suggestion}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            </ScrollArea>
-          )}
+          <AIReview code={code} language={language} />
         </div>
       )}
 

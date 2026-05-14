@@ -6,6 +6,11 @@ import { CenterPanel } from "@/components/editor/center-panel";
 import { RightPanel } from "@/components/editor/right-panel";
 import { RightPanelToggle } from "@/components/editor/right-panel-toggle";
 import { VoiceBar } from "@/components/editor/voice-bar";
+import {
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizableHandle,
+} from "@/components/ui/resizable";
 import { api } from "@/lib/api";
 import { supabase } from "@/lib/supabase";
 import { initSocket } from "@/lib/socket";
@@ -44,6 +49,13 @@ export default function RoomPage() {
         const {
           data: { session },
         } = await supabase.auth.getSession();
+
+        // Try to join the room first
+        await api.joinRoom(roomId);
+
+        // Fetch the initial room state
+        const roomData = await api.getRoom(roomId);
+
         let userObj = null;
         if (session && isMounted) {
           userObj = {
@@ -55,20 +67,18 @@ export default function RoomPage() {
             color: "#f97316", // Default color for you
             isOnline: true,
             isCurrentUser: true,
+            isOwner: session.user.id === roomData.created_by,
           };
           setCurrentUser(userObj);
           setActiveUsers([userObj]);
         }
 
-        // Try to join the room first (this will succeed if already joined, or add the user, or fail if 404)
-        await api.joinRoom(roomId);
-
-        // Fetch the initial room state
-        const roomData = await api.getRoom(roomId);
-
         if (isMounted) {
           setRoomName(roomData.name);
-          setLanguage(roomData.language || "javascript-node");
+
+          let dbLang = roomData.language || "javascript-node";
+          if (dbLang === "javascript") dbLang = "javascript-node";
+          setLanguage(dbLang);
 
           // Load saved code from Supabase if it exists (latest snippet for this room)
           const { data: snippets } = await supabase
@@ -99,6 +109,7 @@ export default function RoomPage() {
                 color: isMe ? "#f97316" : "#3b82f6",
                 isOnline: false, // Will be updated by socket events
                 isCurrentUser: isMe,
+                isOwner: p.id === roomData.created_by,
               };
             });
 
@@ -331,34 +342,52 @@ export default function RoomPage() {
       />
 
       <div className="flex-1 flex overflow-hidden">
-        <LeftPanel
-          users={activeUsers}
-          socket={socket}
-          roomId={roomId}
-          onAIReview={handleAIReview}
-          onAIFix={handleAIFix}
-        />
+        <ResizablePanelGroup direction="horizontal">
+          {/* Left Panel */}
+          <ResizablePanel defaultSize={20} minSize={15} maxSize={30}>
+            <LeftPanel
+              users={activeUsers}
+              socket={socket}
+              roomId={roomId}
+              onAIReview={handleAIReview}
+              onAIFix={handleAIFix}
+            />
+          </ResizablePanel>
 
-        <CenterPanel
-          roomId={roomId}
-          code={code}
-          onChange={handleCodeChange}
-          language={language}
-          users={activeUsers.filter((u) => !u.isCurrentUser)}
-          currentUser={currentUser}
-          saveStatus={saveStatus}
-        />
+          <ResizableHandle />
 
-        {rightPanelView && (
-          <RightPanel
-            view={rightPanelView}
-            output={output}
-            error={error}
-            input={input}
-            onInputChange={setInput}
-            isRunning={isRunning}
-          />
-        )}
+          {/* Center Panel */}
+          <ResizablePanel defaultSize={rightPanelView ? 55 : 80}>
+            <CenterPanel
+              roomId={roomId}
+              code={code}
+              onChange={handleCodeChange}
+              language={language}
+              users={activeUsers.filter((u) => !u.isCurrentUser)}
+              currentUser={currentUser}
+              saveStatus={saveStatus}
+            />
+          </ResizablePanel>
+
+          {/* Right Panel */}
+          {rightPanelView && (
+            <>
+              <ResizableHandle />
+              <ResizablePanel defaultSize={25} minSize={20} maxSize={50}>
+                <RightPanel
+                  view={rightPanelView}
+                  output={output}
+                  error={error}
+                  input={input}
+                  onInputChange={setInput}
+                  isRunning={isRunning}
+                  code={code}
+                  language={language}
+                />
+              </ResizablePanel>
+            </>
+          )}
+        </ResizablePanelGroup>
 
         <RightPanelToggle activeView={rightPanelView} onToggle={togglePanel} />
       </div>
