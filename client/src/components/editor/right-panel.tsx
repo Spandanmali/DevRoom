@@ -8,12 +8,13 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import AIReview from "@/components/AIReview"
+import OutputPanel from "./OutputPanel"
 
 type RightPanelView = "output" | "ai-review" | "whiteboard" | "interview"
 
 interface RightPanelProps {
   view: RightPanelView
-  output: string
+  output: any // Modifying this to accept string or object
   error: string
   input: string
   onInputChange: (input: string) => void
@@ -38,53 +39,28 @@ export function RightPanel({
   const [timeRemaining, setTimeRemaining] = useState("00:45:00")
 
   return (
-    <div className="w-full h-full border-l border-border bg-card flex flex-col">
+    <div className="w-full h-full border-l border-border bg-[#111111] flex flex-col">
       {/* Output View */}
       {view === "output" && (
-        <div className="flex-1 flex flex-col p-3 gap-3">
-          <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-            Output
-          </h3>
-          
-          {/* Input */}
-          <div className="space-y-2">
-            <Label className="text-xs text-muted-foreground">Input (stdin)</Label>
-            <Textarea
-              value={input}
-              onChange={(e) => onInputChange(e.target.value)}
-              placeholder="Enter input..."
-              className="h-20 bg-input border-border text-foreground text-sm font-mono resize-none placeholder:text-muted-foreground"
-            />
+        <div className="flex-1 flex flex-col min-h-0">
+          {/* We wrap the OutputPanel in a flex container. We still keep the stdin textarea above it. */}
+          <div className="p-3 border-b border-[#222222] bg-[#161616]">
+             <Label className="text-xs text-muted-foreground uppercase tracking-wider mb-2 block">Input (stdin)</Label>
+             <Textarea
+               value={input}
+               onChange={(e) => onInputChange(e.target.value)}
+               placeholder="Enter input..."
+               className="h-16 bg-black border-[#222222] text-foreground text-sm font-mono resize-none placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-green-500/50"
+             />
           </div>
-
-          {/* Output */}
-          <div className="flex-1 flex flex-col space-y-2 min-h-0">
-            <Label className="text-xs text-muted-foreground">Output (stdout)</Label>
-            <ScrollArea className="flex-1 min-h-0">
-              <div className="bg-input border border-border p-2 min-h-[100px] font-mono text-sm">
-                {isRunning ? (
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Running...
-                  </div>
-                ) : output ? (
-                  <pre className="text-[#22c55e] whitespace-pre-wrap">{output}</pre>
-                ) : (
-                  <span className="text-muted-foreground">No output</span>
-                )}
-              </div>
-            </ScrollArea>
+          <div className="flex-1 overflow-hidden">
+             {/* Pass down props to our custom OutputPanel. Note: onRun is handled by navbar, so we can omit it here or pass a mock if needed.
+                 We also need to shape `output` as an object for OutputPanel. */}
+             <OutputPanel 
+               isRunning={isRunning} 
+               output={typeof output === 'object' ? output : { stdout: output, stderr: error, status: 'Finished' }} 
+             />
           </div>
-
-          {/* Error */}
-          {error && (
-            <div className="space-y-2">
-              <Label className="text-xs text-muted-foreground">Error (stderr)</Label>
-              <div className="bg-input border border-border p-2 font-mono text-sm">
-                <pre className="text-destructive whitespace-pre-wrap">{error}</pre>
-              </div>
-            </div>
-          )}
         </div>
       )}
 

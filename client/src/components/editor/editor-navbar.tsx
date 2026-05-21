@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Link } from "react-router-dom"
-import { Play, Share2, Check, ChevronDown, LogOut, User, Moon, Sun } from "lucide-react"   
+import { Play, Share2, Check, ChevronDown, LogOut, User, Moon, Sun, PenLine, Timer } from "lucide-react"   
 import { Button } from "@/components/ui/button"
 import { useTheme } from "next-themes"
 import {
@@ -36,6 +36,10 @@ interface EditorNavbarProps {
   users: EditorUser[]
   onRun: () => void
   isRunning: boolean
+  isWhiteboardOpen: boolean
+  onToggleWhiteboard: () => void
+  isInterviewActive?: boolean
+  onInterviewToggle?: () => void
 }
 
 const LANGUAGES = [
@@ -57,6 +61,10 @@ export function EditorNavbar({
   users,
   onRun,
   isRunning,
+  isWhiteboardOpen,
+  onToggleWhiteboard,
+  isInterviewActive,
+  onInterviewToggle,
 }: EditorNavbarProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [copied, setCopied] = useState(false)
@@ -133,6 +141,30 @@ export function EditorNavbar({
 
       {/* Right: Actions + Users */}
       <div className="flex items-center gap-3">
+        {/* Interview Mode Toggle */}
+        <Button
+          variant={isInterviewActive ? "destructive" : "outline"}
+          size="sm"
+          onClick={onInterviewToggle}
+          className={`h-8 gap-2 text-sm ${isInterviewActive ? "bg-red-500 hover:bg-red-600 text-white" : "border-border hover:bg-accent"}`}
+          title="Interview Mode"
+        >
+          <Timer className="h-3.5 w-3.5" />
+          Interview
+        </Button>
+
+        {/* Whiteboard Toggle */}
+        <Button
+          variant={isWhiteboardOpen ? "secondary" : "outline"}
+          size="sm"
+          onClick={onToggleWhiteboard}
+          className={`h-8 gap-2 text-sm ${isWhiteboardOpen ? "bg-accent/80" : "border-border hover:bg-accent"}`}
+          title="Whiteboard"
+        >
+          <PenLine className="h-3.5 w-3.5" />
+          Whiteboard
+        </Button>
+
         {/* Share Button */}
         <Button
           variant="outline"
