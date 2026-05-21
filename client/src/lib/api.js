@@ -51,5 +51,11 @@ export const api = {
     fetchWithAuth('/ai/review', {
       method: 'POST',
       body: JSON.stringify({ code, language })
+    }),
+
+  executeCode: (source_code, language_id, stdin = '') =>
+    fetchWithAuth('/execute', {
+      method: 'POST',
+      body: JSON.stringify({ source_code, language_id, stdin })
     })
 };

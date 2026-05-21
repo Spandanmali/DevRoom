@@ -96,6 +96,28 @@ function setupSocketHandlers(io) {
             }
         });
 
+        // Interview Mode Events
+        socket.on('start-interview', ({ roomId, session }) => {
+            console.log(`[SERVER] Interview started in room ${roomId}`);
+            io.to(roomId).emit('interview-started', { session });
+        });
+
+        socket.on('timer-sync', ({ roomId, timeLeft }) => {
+            socket.to(roomId).emit('timer-update', { timeLeft });
+        });
+
+        socket.on('tab-switch', ({ roomId, candidateName, timestamp }) => {
+            socket.to(roomId).emit('candidate-tab-switch', {
+                candidateName,
+                timestamp
+            });
+        });
+
+        socket.on('end-interview', ({ roomId }) => {
+            console.log(`[SERVER] Interview ended in room ${roomId}`);
+            io.to(roomId).emit('interview-ended', {});
+        });
+
         socket.on('disconnecting', () => {
             const userData = userSocketMap.get(socket.id);
             if (userData) {

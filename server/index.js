@@ -11,7 +11,7 @@ import authRoutes from './routes/auth.js';
 import roomRoutes from './routes/rooms.js';
 import snippetRoutes from './routes/snippets.js';
 import aiRoutes from './routes/ai.js';
-import executeRoutes from './routes/execute.js';
+import codeRoutes from './routes/code.js';
 import interviewRoutes from './routes/interview.js';
 import setupSocketHandlers from './socket/socketHandler.js';
 
@@ -39,7 +39,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/rooms', roomRoutes);
 app.use('/api/snippets', snippetRoutes);
 app.use('/api/ai', aiRoutes);
-app.use('/api/execute', executeRoutes);
+app.use('/api/code', codeRoutes);
 app.use('/api/interview', interviewRoutes);
 
 const io = new Server(server, {

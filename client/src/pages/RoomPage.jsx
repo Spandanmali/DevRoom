@@ -6,6 +6,9 @@ import { CenterPanel } from "@/components/editor/center-panel";
 import { RightPanel } from "@/components/editor/right-panel";
 import { RightPanelToggle } from "@/components/editor/right-panel-toggle";
 import { VoiceBar } from "@/components/editor/voice-bar";
+import { Whiteboard } from "@/components/editor/Whiteboard";
+import { InterviewMode } from "@/components/interview/InterviewMode";
+import InterviewRoom from "@/components/interview/InterviewRoom";
 import {
   ResizablePanelGroup,
   ResizablePanel,
@@ -38,6 +41,9 @@ export default function RoomPage() {
   const [error, setError] = useState("");
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [isWhiteboardOpen, setIsWhiteboardOpen] = useState(false);
+  const [isInterviewOpen, setIsInterviewOpen] = useState(false);
+  const [isInterviewActive, setIsInterviewActive] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -75,6 +81,7 @@ export default function RoomPage() {
 
         if (isMounted) {
           setRoomName(roomData.name);
+          setIsInterviewActive(!!roomData.is_interview_mode);
 
           let dbLang = roomData.language || "javascript-node";
           if (dbLang === "javascript") dbLang = "javascript-node";
@@ -274,6 +281,12 @@ export default function RoomPage() {
           setSaveStatus("Saved ☁️");
         }, 3000);
       });
+
+      // Listen for interview status changes to update navbar
+      localSocket.on("interview-started", () => {
+        setIsInterviewActive(true);
+      });
+      // Removing interview-ended from RoomPage, let InterviewRoom handle it
     };
 
     setupSocket();
@@ -287,16 +300,50 @@ export default function RoomPage() {
     };
   }, [currentUser, roomId, isLoading]);
 
-  const handleRunCode = () => {
+  const handleRunCode = async () => {
     setIsRunning(true);
     setRightPanelView("output");
-    setOutput("");
+    setOutput(null);
     setError("");
 
-    setTimeout(() => {
-      setOutput("Run output will appear here soon...");
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      const response = await fetch("/api/code/execute", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+        body: JSON.stringify({
+          script: code,
+          language,
+          stdin: input,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || "Execution failed");
+        setOutput({
+          statusCode: data.statusCode || 500,
+          output: data.error || data.message || "Execution failed",
+        });
+      } else {
+        setOutput(data);
+        if (data.statusCode !== 200) {
+          setError("Execution finished with errors.");
+        }
+      }
+    } catch (err) {
+      setError(err.message || "Network error occurred");
+      setOutput({ statusCode: 500, output: err.message });
+    } finally {
       setIsRunning(false);
-    }, 1000);
+    }
   };
 
   const handleAIReview = () => {
@@ -328,8 +375,27 @@ export default function RoomPage() {
     );
   }
 
+  if (isInterviewActive) {
+    return (
+      <div className="h-screen flex flex-col bg-background overflow-hidden relative">
+        <InterviewRoom
+          roomId={roomId}
+          currentUser={currentUser}
+          isHost={currentUser?.isOwner}
+          socket={socket}
+          onInterviewEnd={() => setIsInterviewActive(false)}
+          code={code}
+          onCodeChange={handleCodeChange}
+          language={language}
+          onLanguageChange={setLanguage}
+        />
+        {/* We still render this invisible so we don't break the start/stop logic of the modal if needed, or we can leave it out. Actually, InterviewMode is only for starting an interview. */}
+      </div>
+    );
+  }
+
   return (
-    <div className="h-screen flex flex-col bg-background overflow-hidden">
+    <div className="h-screen flex flex-col bg-background overflow-hidden relative">
       <EditorNavbar
         roomId={roomId}
         roomName={roomName}
@@ -339,6 +405,27 @@ export default function RoomPage() {
         users={activeUsers}
         onRun={handleRunCode}
         isRunning={isRunning}
+        isWhiteboardOpen={isWhiteboardOpen}
+        onToggleWhiteboard={() => setIsWhiteboardOpen(!isWhiteboardOpen)}
+        isInterviewActive={isInterviewActive}
+        onInterviewToggle={() => setIsInterviewOpen(true)}
+      />
+
+      <InterviewMode
+        roomId={roomId}
+        currentUser={currentUser}
+        isHost={currentUser?.isOwner}
+        currentCode={code}
+        language={language}
+        isOpen={isInterviewOpen}
+        onClose={() => setIsInterviewOpen(false)}
+        socket={socket}
+      />
+
+      <Whiteboard
+        roomId={roomId}
+        isOpen={isWhiteboardOpen}
+        onClose={() => setIsWhiteboardOpen(false)}
       />
 
       <div className="flex-1 flex overflow-hidden">

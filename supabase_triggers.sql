@@ -48,3 +48,34 @@ DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
+-- Interview Sessions Table
+CREATE TABLE IF NOT EXISTS public.interview_sessions (
+  id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  room_id           TEXT REFERENCES public.rooms(id) ON DELETE CASCADE,
+  host_id           UUID REFERENCES public.users(id),
+  problem_statement TEXT NOT NULL,
+  duration_minutes  INT NOT NULL DEFAULT 45,
+  final_code        TEXT DEFAULT '',
+  ai_evaluation     TEXT DEFAULT '',
+  status            TEXT DEFAULT 'active',
+  started_at        TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  ended_at          TIMESTAMP WITH TIME ZONE
+);
+
+ALTER TABLE public.interview_sessions ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view interview sessions for rooms they are in"
+ON public.interview_sessions FOR SELECT
+TO authenticated
+USING ( true );
+
+CREATE POLICY "Hosts can create interview sessions"
+ON public.interview_sessions FOR INSERT
+TO authenticated
+WITH CHECK ( auth.uid() = host_id );
+
+CREATE POLICY "Hosts can update their interview sessions"
+ON public.interview_sessions FOR UPDATE
+TO authenticated
+USING ( auth.uid() = host_id );
