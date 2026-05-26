@@ -37,29 +37,20 @@ if (process.env.CLIENT_URL) {
     allowedOrigins.push(process.env.CLIENT_URL);
 }
 
-app.use(
-    cors({
-        origin: function (origin, callback) {
-            // allow requests with no origin (postman/mobile apps)
-            if (!origin) return callback(null, true);
+app.use(cors({
+    origin: [
+        'http://localhost:5173',
+        'https://dev-room-opal.vercel.app',
+        'https://dev-room-git-main-spandanmalis-projects.vercel.app',
+        process.env.CLIENT_URL
+    ],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}))
 
-            if (allowedOrigins.includes(origin)) {
-                callback(null, true);
-            } else {
-                callback(new Error("CORS not allowed"));
-            }
-        },
-        credentials: true,
-        methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        allowedHeaders: ["Content-Type", "Authorization"],
-    })
-);
-
-// Handle preflight requests
+// Add this line too
 app.options('*', cors())
-
-
-
 
 
 app.use(helmet());
@@ -79,11 +70,16 @@ app.use('/api/interview', interviewRoutes);
 
 const io = new Server(server, {
     cors: {
-        origin: CLIENT_URL,
-        methods: ['GET', 'POST'],
-        credentials: true
+        origin: [
+            'http://localhost:5173',
+            'https://dev-room-opal.vercel.app',
+            'https://dev-room-git-main-spandanmalis-projects.vercel.app',
+            process.env.CLIENT_URL
+        ],
+        credentials: true,
+        methods: ['GET', 'POST']
     }
-});
+})
 
 setupSocketHandlers(io);
 
