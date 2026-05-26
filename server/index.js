@@ -27,6 +27,26 @@ const server = http.createServer(app);
 const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
 const PORT = process.env.PORT || 5000;
 
+import cors from 'cors'
+
+app.use(cors({
+    origin: [
+        'http://localhost:5173',
+        'https://devroom.vercel.app',
+        process.env.CLIENT_URL
+    ],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}))
+
+// Handle preflight requests
+app.options('*', cors())
+
+
+
+
+
 app.use(helmet());
 app.use(cors({ origin: CLIENT_URL, credentials: true }));
 app.use(express.json());
