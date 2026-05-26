@@ -27,7 +27,6 @@ const server = http.createServer(app);
 const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
 const PORT = process.env.PORT || 5000;
 
-import cors from "cors";
 
 const allowedOrigins = [
     "http://localhost:5173",
