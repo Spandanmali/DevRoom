@@ -19,7 +19,10 @@ import { WebSocketServer } from 'ws';
 import yUtils from 'y-websocket/bin/utils';
 import supabase from './lib/supabase.js';
 
-const { setupWSConnection, docs, setPersistence } = yUtils;
+const { setupWSConnection } = yUtils;
+
+const app = express();
+const server = http.createServer(app);
 
 const PORT = process.env.PORT || 5000;
 
@@ -29,7 +32,6 @@ const allowedOrigins = [
     'https://dev-room-git-main-spandanmalis-projects.vercel.app'
 ];
 
-// Add env origin if present
 if (process.env.CLIENT_URL) {
     allowedOrigins.push(process.env.CLIENT_URL);
 }
@@ -40,11 +42,13 @@ app.use((req, res, next) => {
     next();
 });
 
-// CORS middleware
+// CORS
 app.use(cors({
     origin: function (origin, callback) {
-        // Allow requests with no origin (Postman/mobile apps)
-        if (!origin) return callback(null, true);
+        // Allow requests without origin
+        if (!origin) {
+            return callback(null, true);
+        }
 
         if (allowedOrigins.includes(origin)) {
             callback(null, true);
@@ -58,7 +62,6 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// Handle preflight requests
 app.options('*', cors());
 
 app.use(helmet());
