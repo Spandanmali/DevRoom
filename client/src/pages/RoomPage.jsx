@@ -4,8 +4,6 @@ import { EditorNavbar } from "@/components/editor/editor-navbar";
 import { LeftPanel } from "@/components/editor/left-panel";
 import { CenterPanel } from "@/components/editor/center-panel";
 import { RightPanel } from "@/components/editor/right-panel";
-import { RightPanelToggle } from "@/components/editor/right-panel-toggle";
-import { VoiceBar } from "@/components/editor/voice-bar";
 import { Whiteboard } from "@/components/editor/Whiteboard";
 import { InterviewMode } from "@/components/interview/InterviewMode";
 import InterviewRoom from "@/components/interview/InterviewRoom";
@@ -19,6 +17,26 @@ import { supabase } from "@/lib/supabase";
 import { initSocket } from "@/lib/socket";
 
 import { toast } from "sonner";
+
+const USER_COLORS = [
+  "#f97316", // orange
+  "#3b82f6", // blue
+  "#10b981", // emerald
+  "#8b5cf6", // indigo
+  "#ec4899", // pink
+  "#eab308", // yellow
+  "#14b8a6", // teal
+  "#ef4444", // red
+];
+
+function getUserColor(userId) {
+  if (!userId) return "#3b82f6";
+  let hash = 0;
+  for (let i = 0; i < userId.length; i++) {
+    hash = userId.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return USER_COLORS[Math.abs(hash) % USER_COLORS.length];
+}
 
 const SAMPLE_CODE = `// Real-time collaborative code editor
 // Start typing...
@@ -70,7 +88,7 @@ export default function RoomPage() {
               session.user.user_metadata?.full_name ||
               session.user.email?.split("@")[0] ||
               "You",
-            color: "#f97316", // Default color for you
+            color: getUserColor(session.user.id),
             isOnline: true,
             isCurrentUser: true,
             isOwner: session.user.id === roomData.created_by,
@@ -113,7 +131,7 @@ export default function RoomPage() {
               return {
                 id: p.id,
                 name: isMe ? `${baseName} (You)` : baseName,
-                color: isMe ? "#f97316" : "#3b82f6",
+                color: getUserColor(p.id),
                 isOnline: false, // Will be updated by socket events
                 isCurrentUser: isMe,
                 isOwner: p.id === roomData.created_by,
@@ -225,6 +243,7 @@ export default function RoomPage() {
               } else {
                 newUsersMap.set(client.user.id, {
                   ...client.user,
+                  color: getUserColor(client.user.id),
                   name:
                     client.user.id === currentUser.id
                       ? `${client.user.name} (You)`
@@ -354,14 +373,6 @@ export default function RoomPage() {
     setRightPanelView("ai-review");
   };
 
-  const togglePanel = (view) => {
-    if (rightPanelView === view) {
-      setRightPanelView(null);
-    } else {
-      setRightPanelView(view);
-    }
-  };
-
   const handleCodeChange = (newCode) => {
     setCode(newCode);
     setSaveStatus("Unsaved changes...");
@@ -470,16 +481,13 @@ export default function RoomPage() {
                   isRunning={isRunning}
                   code={code}
                   language={language}
+                  onClose={() => setRightPanelView(null)}
                 />
               </ResizablePanel>
             </>
           )}
         </ResizablePanelGroup>
-
-        <RightPanelToggle activeView={rightPanelView} onToggle={togglePanel} />
       </div>
-
-      <VoiceBar users={activeUsers} />
     </div>
   );
 }

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Loader2, Play, Square } from "lucide-react"
+import { Loader2, Play, Square, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -21,6 +21,7 @@ interface RightPanelProps {
   isRunning: boolean
   code: string
   language: string
+  onClose?: () => void
 }
 
 export function RightPanel({
@@ -32,6 +33,7 @@ export function RightPanel({
   isRunning,
   code,
   language,
+  onClose,
 }: RightPanelProps) {
   const [interviewMode, setInterviewMode] = useState(false)
   const [timerDuration, setTimerDuration] = useState(45)
@@ -39,7 +41,17 @@ export function RightPanel({
   const [timeRemaining, setTimeRemaining] = useState("00:45:00")
 
   return (
-    <div className="w-full h-full border-l border-border bg-[#111111] flex flex-col">
+    <div className="w-full h-full border-l border-border bg-[#111111] flex flex-col relative">
+      {onClose && (
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="absolute top-2 right-2 h-6 w-6 z-10 text-muted-foreground hover:text-foreground"
+          onClick={onClose}
+        >
+          <X className="h-4 w-4" />
+        </Button>
+      )}
       {/* Output View */}
       {view === "output" && (
         <div className="flex-1 flex flex-col min-h-0">

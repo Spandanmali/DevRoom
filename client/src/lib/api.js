@@ -54,7 +54,7 @@ export const api = {
     }),
 
   executeCode: (source_code, language_id, stdin = '') =>
-    fetchWithAuth('/execute', {
+    fetchWithAuth('/code/execute', {
       method: 'POST',
       body: JSON.stringify({ source_code, language_id, stdin })
     })
