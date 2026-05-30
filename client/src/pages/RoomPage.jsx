@@ -330,18 +330,21 @@ export default function RoomPage() {
         data: { session },
       } = await supabase.auth.getSession();
 
-      const response = await fetch("/api/code/execute", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session?.access_token}`,
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/code/execute`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session?.access_token}`,
+          },
+          body: JSON.stringify({
+            script: code,
+            language,
+            stdin: input,
+          }),
         },
-        body: JSON.stringify({
-          script: code,
-          language,
-          stdin: input,
-        }),
-      });
+      );  
 
       const data = await response.json();
 
